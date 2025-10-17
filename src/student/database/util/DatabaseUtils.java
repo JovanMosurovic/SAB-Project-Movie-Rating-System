@@ -210,6 +210,7 @@ public class DatabaseUtils {
         try {
             callProcedure("SP_REWARD_USER_FOR_RATING", userId, movieId);
         } catch (SQLException e) {
+            // Silent fail - procedure handles its own logic
         }
     }
 
@@ -247,48 +248,5 @@ public class DatabaseUtils {
             return List.of();
         }
     }
-
-    /**
-     * Calls FN_GET_PREPORUCENI_FILMOVI function to get recommended movies.
-     * Returns movies from favorite genres that match recommendation criteria.
-     *
-     * @param userId the user ID
-     * @return a list of movie IDs
-     */
-    public static List<Integer> getRecommendedMoviesFromFunction(Integer userId) {
-        try {
-            return getIntegerList(
-                    "SELECT FilmId " +
-                            "FROM dbo.FN_GET_PREPORUCENI_FILMOVI(?) " +
-                            "ORDER BY FilmId",
-                    userId
-            );
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
-    /**
-     * Calls FN_GET_OMILJENI_ZANROVI function to get favorite genres.
-     * Returns genres where average rating is >= 8.
-     *
-     * @param userId the user ID
-     * @return a list of genre IDs
-     */
-    public static List<Integer> getFavoriteGenresFromFunction(Integer userId) {
-        try {
-            return getIntegerList(
-                    "SELECT ZanrId " +
-                            "FROM dbo.FN_GET_OMILJENI_ZANROVI(?) " +
-                            "ORDER BY ProsecnaOcena DESC",
-                    userId
-            );
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
 
 }

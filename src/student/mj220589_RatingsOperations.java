@@ -30,7 +30,7 @@ public class mj220589_RatingsOperations implements RatingsOperations {
             );
 
             if (rowsAffected > 0) {
-                DatabaseUtils.callRewardProcedure(userId, movieId);  // <-- DODAJ OVO
+                DatabaseUtils.callRewardProcedure(userId, movieId);
                 return true;
             }
             return false;

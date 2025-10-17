@@ -124,11 +124,13 @@ public class mj220589_UsersOperations implements UsersOperations {
 
     @Override
     public List<String> getThematicSpecializations(Integer userId) {
+        // Calls FN_GET_TEMATSKE_SPECIJALIZACIJE function
         return DatabaseUtils.getThematicSpecializationsFromFunction(userId);
     }
 
     @Override
     public String getUserDescription(Integer userId) {
+        // Calls FN_GET_OPIS_KORISNIKA function
         return DatabaseUtils.getUserDescriptionFromFunction(userId);
     }
 }
