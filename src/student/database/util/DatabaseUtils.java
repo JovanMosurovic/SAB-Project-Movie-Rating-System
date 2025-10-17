@@ -201,6 +201,23 @@ public class DatabaseUtils {
     }
 
     /**
+     * Calls a table-valued function and returns a list of integers from a specific column.
+     *
+     * @param functionName the name of the table-valued function
+     * @param param the parameter to pass to the function
+     * @param columnName the name of the column to retrieve
+     * @return a list of integer values from the specified column
+     */
+    public static List<Integer> callTableFunctionForIntColumn(String functionName, Integer param, String columnName) {
+        try {
+            return getIntegerList("SELECT " + columnName + " FROM dbo." + functionName + "(?) ORDER BY " + columnName, param);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    /**
      * Calls SP_REWARD_USER_FOR_RATING stored procedure.
      *
      * @param userId the user ID
@@ -210,7 +227,7 @@ public class DatabaseUtils {
         try {
             callProcedure("SP_REWARD_USER_FOR_RATING", userId, movieId);
         } catch (SQLException e) {
-            // Silent fail - procedure handles its own logic
+
         }
     }
 

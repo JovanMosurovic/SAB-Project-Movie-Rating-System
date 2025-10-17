@@ -82,32 +82,8 @@ public class mj220589_UsersOperations implements UsersOperations {
 
     @Override
     public List<Integer> getRecommendedMoviesFromFavoriteGenres(Integer userId) {
-        try {
-            String sql =
-                    "SELECT DISTINCT f.Id " +
-                            "FROM Film f " +
-                            "JOIN FilmZanr fz ON f.Id = fz.FilmId " +
-                            "WHERE fz.ZanrId IN ( " +
-                            "    SELECT TOP 3 fz2.ZanrId " +
-                            "    FROM Ocena o " +
-                            "    JOIN FilmZanr fz2 ON o.FilmId = fz2.FilmId " +
-                            "    WHERE o.KorisnikId = ? " +
-                            "    GROUP BY fz2.ZanrId " +
-                            "    ORDER BY COUNT(DISTINCT o.FilmId) DESC " +
-                            ") " +
-                            "AND f.Id NOT IN ( " +
-                            "    SELECT FilmId FROM Ocena WHERE KorisnikId = ? " +
-                            ") " +
-                            "AND f.Id NOT IN ( " +
-                            "    SELECT FilmId FROM ListaZaGledanje WHERE KorisnikId = ? " +
-                            ") " +
-                            "ORDER BY f.Id";
-
-            return DatabaseUtils.getIntegerList(sql, userId, userId, userId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return List.of();
-        }
+        // Poziva FN_GET_PREPORUCENI_FILMOVI funkciju
+        return DatabaseUtils.callTableFunctionForIntColumn("FN_GET_PREPORUCENI_FILMOVI", userId, "FilmId");
     }
 
     @Override
