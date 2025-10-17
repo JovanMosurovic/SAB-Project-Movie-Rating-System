@@ -6,12 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Utility class for common database operations.
- * Provides simplified methods for executing SQL statements and retrieving results.
- *
- * @author Jovan Mosurovic
- */
+
 public class DatabaseUtils {
 
     /**
