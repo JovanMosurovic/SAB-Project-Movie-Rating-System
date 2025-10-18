@@ -38,6 +38,13 @@ public class mj220589_WatchlistsOperations implements WatchlistsOperations {
     @Override
     public boolean removeMovieFromWatchlist(Integer userId, Integer movieId) {
         try {
+            // Check if entry exists
+            if (!DatabaseUtils.exists(
+                    "SELECT COUNT(*) FROM ListaZaGledanje WHERE KorisnikId = ? AND FilmId = ?",
+                    userId, movieId)) {
+                return false;
+            }
+
             int rowsAffected = DatabaseUtils.executeUpdate("DELETE FROM ListaZaGledanje WHERE KorisnikId = ? AND FilmId = ?", userId, movieId);
             return rowsAffected > 0;
         } catch (SQLException e) {

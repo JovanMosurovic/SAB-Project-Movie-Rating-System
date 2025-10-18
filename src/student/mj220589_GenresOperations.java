@@ -26,6 +26,18 @@ public class mj220589_GenresOperations implements GenresOperations {
     @Override
     public Integer updateGenre(Integer id, String newName) {
         try {
+            // Check if genre exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Zanr WHERE Id = ?", id)) {
+                return null;
+            }
+
+            // Check if new name already exists (excluding current genre)
+            if (DatabaseUtils.exists(
+                    "SELECT COUNT(*) FROM Zanr WHERE Naziv = ? AND Id <> ?",
+                    newName, id)) {
+                return null;
+            }
+
             String sql = "UPDATE Zanr SET Naziv = ? WHERE Id = ?";
             int rowsAffected = DatabaseUtils.executeUpdate(sql, newName, id);
             return rowsAffected > 0 ? id : null;
@@ -38,6 +50,11 @@ public class mj220589_GenresOperations implements GenresOperations {
     @Override
     public Integer removeGenre(Integer id) {
         try {
+            // Check if genre exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Zanr WHERE Id = ?", id)) {
+                return null;
+            }
+
             DatabaseUtils.executeUpdate("DELETE FROM FilmZanr WHERE ZanrId = ?", id);
 
             int rowsAffected = DatabaseUtils.executeUpdate("DELETE FROM Zanr WHERE Id = ?", id);

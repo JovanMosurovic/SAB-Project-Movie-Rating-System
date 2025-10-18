@@ -31,7 +31,7 @@ public class mj220589_TagsOperations implements TagsOperations {
             }
 
             if (DatabaseUtils.exists("SELECT COUNT(*) FROM FilmTag WHERE FilmId = ? AND TagId = ?", movieId, tagId)) {
-                return null;
+                return null; // can return tagId too
             }
 
             int rowsAffected = DatabaseUtils.executeUpdate("INSERT INTO FilmTag (FilmId, TagId) VALUES (?, ?)", movieId, tagId);

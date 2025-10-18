@@ -11,11 +11,37 @@ public class mj220589_MoviesOperations implements MoviesOperations {
     @Override
     public Integer addMovie(String title, Integer genreId, String director) {
         try {
-            String insertMovie = "INSERT INTO Film (Naslov, Reziser) VALUES (?, ?)";
-            Integer movieId = DatabaseUtils.executeInsertAndGetId(insertMovie, title, director);
+            // Check if genre exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Zanr WHERE Id = ?", genreId)) {
+                return null;
+            }
+
+            // Check if movie with same title, genre, and director already exists
+            if (DatabaseUtils.exists(
+                    "SELECT COUNT(*) FROM Film f " +
+                            "INNER JOIN FilmZanr fz ON f.Id = fz.FilmId " +
+                            "WHERE f.Naslov = ? AND fz.ZanrId = ? AND f.Reziser = ?",
+                    title, genreId, director)) {
+                return null;
+            }
+
+            Integer movieId = DatabaseUtils.executeInsertAndGetId(
+                    "INSERT INTO Film (Naslov, Reziser) VALUES (?, ?)",
+                    title, director
+            );
 
             if (movieId != null) {
-                DatabaseUtils.executeUpdate("INSERT INTO FilmZanr (FilmId, ZanrId) VALUES (?, ?)", movieId, genreId);
+                // Add genre association
+                int rowsAffected = DatabaseUtils.executeUpdate(
+                        "INSERT INTO FilmZanr (FilmId, ZanrId) VALUES (?, ?)",
+                        movieId, genreId
+                );
+
+                // If genre link failed, rollback by deleting the movie
+                if (rowsAffected == 0) {
+                    DatabaseUtils.executeUpdate("DELETE FROM Film WHERE Id = ?", movieId);
+                    return null;
+                }
             }
 
             return movieId;
@@ -28,6 +54,11 @@ public class mj220589_MoviesOperations implements MoviesOperations {
     @Override
     public Integer updateMovieTitle(Integer id, String newTitle) {
         try {
+            // Check if movie exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Film WHERE Id = ?", id)) {
+                return null;
+            }
+
             String sql = "UPDATE Film SET Naslov = ? WHERE Id = ?";
             int rowsAffected = DatabaseUtils.executeUpdate(sql, newTitle, id);
             return rowsAffected > 0 ? id : null;
@@ -50,12 +81,11 @@ public class mj220589_MoviesOperations implements MoviesOperations {
                 return null;
             }
 
-            // Check if relationship already exists
+            // Check if association already exists
             if (DatabaseUtils.exists("SELECT COUNT(*) FROM FilmZanr WHERE FilmId = ? AND ZanrId = ?", movieId, genreId)) {
                 return null;
             }
 
-            // Add the relationship
             DatabaseUtils.executeUpdate("INSERT INTO FilmZanr (FilmId, ZanrId) VALUES (?, ?)", movieId, genreId);
             return movieId;
         } catch (SQLException e) {
@@ -67,6 +97,13 @@ public class mj220589_MoviesOperations implements MoviesOperations {
     @Override
     public Integer removeGenreFromMovie(Integer movieId, Integer genreId) {
         try {
+            // Check if association exists
+            if (!DatabaseUtils.exists(
+                    "SELECT COUNT(*) FROM FilmZanr WHERE FilmId = ? AND ZanrId = ?",
+                    movieId, genreId)) {
+                return null;
+            }
+
             int rowsAffected = DatabaseUtils.executeUpdate("DELETE FROM FilmZanr WHERE FilmId = ? AND ZanrId = ?", movieId, genreId);
             return rowsAffected > 0 ? movieId : null;
         } catch (SQLException e) {
@@ -78,6 +115,11 @@ public class mj220589_MoviesOperations implements MoviesOperations {
     @Override
     public Integer updateMovieDirector(Integer id, String newDirector) {
         try {
+            // Check if movie exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Film WHERE Id = ?", id)) {
+                return null;
+            }
+
             String sql = "UPDATE Film SET Reziser = ? WHERE Id = ?";
             int rowsAffected = DatabaseUtils.executeUpdate(sql, newDirector, id);
             return rowsAffected > 0 ? id : null;
@@ -90,6 +132,11 @@ public class mj220589_MoviesOperations implements MoviesOperations {
     @Override
     public Integer removeMovie(Integer id) {
         try {
+            // Check if movie exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Film WHERE Id = ?", id)) {
+                return null;
+            }
+
             // Delete in order due to foreign key constraints
             DatabaseUtils.executeUpdate("DELETE FROM ListaZaGledanje WHERE FilmId = ?", id);
             DatabaseUtils.executeUpdate("DELETE FROM Ocena WHERE FilmId = ?", id);

@@ -27,6 +27,18 @@ public class mj220589_UsersOperations implements UsersOperations {
     @Override
     public Integer updateUser(Integer id, String newUsername) {
         try {
+            // Check if user exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", id)) {
+                return null;
+            }
+
+            // Check if new username already exists (excluding current user)
+            if (DatabaseUtils.exists(
+                    "SELECT COUNT(*) FROM Korisnik WHERE KorisnickoIme = ? AND Id <> ?",
+                    newUsername, id)) {
+                return null;
+            }
+
             int rowsAffected = DatabaseUtils.executeUpdate("UPDATE Korisnik SET KorisnickoIme = ? WHERE Id = ?", newUsername, id);
             return rowsAffected > 0 ? id : null;
         } catch (SQLException e) {
@@ -38,6 +50,11 @@ public class mj220589_UsersOperations implements UsersOperations {
     @Override
     public Integer removeUser(Integer id) {
         try {
+            // Check if user exists
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", id)) {
+                return null;
+            }
+
             // In order due to foreign key constraints
             DatabaseUtils.executeUpdate("DELETE FROM ListaZaGledanje WHERE KorisnikId = ?", id);
             DatabaseUtils.executeUpdate("DELETE FROM Ocena WHERE KorisnikId = ?", id);
@@ -82,13 +99,26 @@ public class mj220589_UsersOperations implements UsersOperations {
 
     @Override
     public List<Integer> getRecommendedMoviesFromFavoriteGenres(Integer userId) {
-        // Poziva FN_GET_PREPORUCENI_FILMOVI funkciju
+        // Check if user doesn't exist
+        try {
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", userId)) {
+                return List.of();
+            }
+        } catch (SQLException e) {
+            return List.of();
+        }
+        // Calling FN_GET_PREPORUCENI_FILMOVI funkciju
         return DatabaseUtils.callTableFunctionForIntColumn("FN_GET_PREPORUCENI_FILMOVI", userId, "FilmId");
     }
 
     @Override
     public Integer getRewards(Integer userId) {
         try {
+            // Check if user doesn't exist
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", userId)) {
+                return 0;
+            }
+
             // BrojNagrada is maintained by SP_REWARD_USER_FOR_RATING procedure
             Integer rewards = DatabaseUtils.getInteger("SELECT BrojNagrada FROM Korisnik WHERE Id = ?", userId);
             return rewards != null ? rewards : 0;
@@ -100,12 +130,30 @@ public class mj220589_UsersOperations implements UsersOperations {
 
     @Override
     public List<String> getThematicSpecializations(Integer userId) {
+        // Check if user doesn't exist
+        try {
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", userId)) {
+                return List.of();
+            }
+        } catch (SQLException e) {
+            return List.of();
+        }
+
         // Calls FN_GET_TEMATSKE_SPECIJALIZACIJE function
         return DatabaseUtils.getThematicSpecializationsFromFunction(userId);
     }
 
     @Override
     public String getUserDescription(Integer userId) {
+        // Check if user doesn't exist
+        try {
+            if (!DatabaseUtils.exists("SELECT COUNT(*) FROM Korisnik WHERE Id = ?", userId)) {
+                return "undefined";
+            }
+        } catch (SQLException e) {
+            return "undefined";
+        }
+
         // Calls FN_GET_OPIS_KORISNIKA function
         return DatabaseUtils.getUserDescriptionFromFunction(userId);
     }
