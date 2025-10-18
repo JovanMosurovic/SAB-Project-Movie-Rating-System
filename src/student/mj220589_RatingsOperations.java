@@ -25,7 +25,7 @@ public class mj220589_RatingsOperations implements RatingsOperations {
             }
 
             int rowsAffected = DatabaseUtils.executeUpdate(
-                    "INSERT INTO Ocena (KorisnikId, FilmId, Vrednost) VALUES (?, ?, ?)",
+                    "INSERT INTO Ocena (KorisnikId, FilmId, Ocena) VALUES (?, ?, ?)",
                     userId, movieId, score
             );
 
@@ -46,7 +46,7 @@ public class mj220589_RatingsOperations implements RatingsOperations {
                 return false;
             }
 
-            String sql = "UPDATE Ocena SET Vrednost = ? WHERE KorisnikId = ? AND FilmId = ?";
+            String sql = "UPDATE Ocena SET Ocena = ? WHERE KorisnikId = ? AND FilmId = ?";
             int rowsAffected = DatabaseUtils.executeUpdate(sql, newScore, userId, movieId);
             return rowsAffected > 0;
         } catch (SQLException e) {
@@ -70,7 +70,7 @@ public class mj220589_RatingsOperations implements RatingsOperations {
     @Override
     public Integer getRating(Integer userId, Integer movieId) {
         try {
-            String sql = "SELECT Vrednost FROM Ocena WHERE KorisnikId = ? AND FilmId = ?";
+            String sql = "SELECT Ocena FROM Ocena WHERE KorisnikId = ? AND FilmId = ?";
             return DatabaseUtils.getInteger(sql, userId, movieId);
         } catch (SQLException e) {
             e.printStackTrace();
